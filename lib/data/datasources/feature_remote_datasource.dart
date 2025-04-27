@@ -9,7 +9,7 @@ abstract class FeatureRemoteDataSource {
   /// Calls the http://example.com/features endpoint.
   ///
   /// Throws a [ServerException] for all error codes.
-  Future<List<FeatureModel>> getAllFeatures();
+  Future<List<FeatureModel>> getAllFeatures({List<String>? labels});
 
   /// Calls the http://example.com/feature endpoint with POST.
   ///
@@ -20,6 +20,11 @@ abstract class FeatureRemoteDataSource {
   ///
   /// Throws a [ServerException] for all error codes.
   Future<void> deleteFeature(String id);
+
+  /// Calls the http://example.com/feature/labels/unique endpoint.
+  ///
+  /// Throws a [ServerException] for all error codes.
+  Future<List<String>> getAllUniqueLabels();
 }
 
 // Define ServerException if not defined elsewhere

@@ -1,51 +1,36 @@
 import 'package:get_it/get_it.dart';
-// Import repository implementations, datasources, use cases, etc. as they are created
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+
+import '../../features/chat/domain/repositories/chat_repository.dart';
+import '../../features/chat/data/repositories/chat_repository_impl.dart';
+import '../../core/network/network_info.dart';
+import '../../core/network/api_client.dart';
 
 final sl = GetIt.instance; // sl = Service Locator
 
 Future<void> init() async {
-  // Register dependencies here as the app grows
+  //! External
+  final sharedPreferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton(() => sharedPreferences);
+  sl.registerLazySingleton(() => http.Client());
+  sl.registerLazySingleton(() => InternetConnectionChecker());
 
-  // Example:
-  // //! Features - Number Trivia
-  // // Bloc
-  // sl.registerFactory(
-  //   () => NumberTriviaBloc(
-  //     getConcreteNumberTrivia: sl(),
-  //     getRandomNumberTrivia: sl(),
-  //     inputConverter: sl(),
-  //   ),
-  // );
+  //! Core
+  sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(
+        baseUrl:
+            'https://api.example.com', // Replace with your actual API base URL
+        client: sl(),
+      ));
 
-  // // Use cases
-  // sl.registerLazySingleton(() => GetConcreteNumberTrivia(sl()));
-  // sl.registerLazySingleton(() => GetRandomNumberTrivia(sl()));
-
-  // // Repository
-  // sl.registerLazySingleton<NumberTriviaRepository>(
-  //   () => NumberTriviaRepositoryImpl(
-  //     remoteDataSource: sl(),
-  //     localDataSource: sl(),
-  //     networkInfo: sl(),
-  //   ),
-  // );
-
-  // // Data sources
-  // sl.registerLazySingleton<NumberTriviaRemoteDataSource>(
-  //   () => NumberTriviaRemoteDataSourceImpl(client: sl()),
-  // );
-
-  // sl.registerLazySingleton<NumberTriviaLocalDataSource>(
-  //   () => NumberTriviaLocalDataSourceImpl(sharedPreferences: sl()),
-  // );
-
-  // //! Core
-  // sl.registerLazySingleton(() => InputConverter());
-  // sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(sl()));
-
-  // //! External
-  // final sharedPreferences = await SharedPreferences.getInstance();
-  // sl.registerLazySingleton(() => sharedPreferences);
-  // sl.registerLazySingleton(() => http.Client());
-  // sl.registerLazySingleton(() => DataConnectionChecker());
+  //! Features
+  // Repository
+  sl.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(
+      apiClient: sl(),
+      networkInfo: sl(),
+    ),
+  );
 }
